@@ -36,7 +36,7 @@ function upload(response, request) {
 	fs.rename(files.upload.path, "/tmp/test.png", function(err) {
 	  if (err) {
 	  	console.log('error occures');
-		fs.unlink("/tmp/test.png");
+		//fs.unlink("/tmp/test.png");
 		console.log('errornot in unlink');
 		fs.rename(files.upload.path, "/tmp/test.png");
 		console.log('errornot in rename');
