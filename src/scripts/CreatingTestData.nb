@@ -1,0 +1,183 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 8.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       157,          7]
+NotebookDataLength[      6019,        174]
+NotebookOptionsPosition[      5441,        151]
+NotebookOutlinePosition[      5783,        166]
+CellTagsIndexPosition[      5740,        163]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"n", " ", "=", " ", "10"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"normalTemp", " ", "=", " ", 
+   RowBox[{"RandomVariate", "[", 
+    RowBox[{
+     RowBox[{"NormalDistribution", "[", 
+      RowBox[{"36.6", ",", "0.2"}], "]"}], ",", 
+     RowBox[{"n", "+", "1"}]}], "]"}]}], ";"}]}], "Input",
+ CellChangeTimes->{{3.64205474078125*^9, 3.64205475284375*^9}, {
+   3.642054832109375*^9, 3.64205486646875*^9}, 3.642057112203125*^9, 
+   3.642057151265625*^9, {3.6420583516875*^9, 3.642058376890625*^9}, {
+   3.642058640875*^9, 3.642058641203125*^9}, {3.64216496715625*^9, 
+   3.642164973234375*^9}, {3.642166152125*^9, 3.64216615228125*^9}}],
+
+Cell[BoxData[
+ RowBox[{"\[IndentingNewLine]", 
+  RowBox[{
+   RowBox[{"sickTempreture", " ", "=", "  ", 
+    RowBox[{"RandomVariate", "[", 
+     RowBox[{
+      RowBox[{"NormalDistribution", "[", 
+       RowBox[{"38.0", ",", "0.4"}], "]"}], ",", 
+      RowBox[{"n", "+", "1"}]}], "]"}]}], ";"}]}]], "Input",
+ CellChangeTimes->{{3.642054873703125*^9, 3.6420548819375*^9}, {
+   3.642054916015625*^9, 3.642054933171875*^9}, 3.6420571096875*^9, 
+   3.642057149828125*^9, {3.64205835553125*^9, 3.642058382234375*^9}, {
+   3.64205864384375*^9, 3.6420586488125*^9}, 3.642164976375*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"sickProbability", " ", "=", " ", 
+   RowBox[{"Table", "[", 
+    RowBox[{
+     RowBox[{"RandomVariate", "[", 
+      RowBox[{"BinomialDistribution", "[", 
+       RowBox[{"1", ",", 
+        RowBox[{"i", "/", 
+         RowBox[{"(", 
+          RowBox[{"n", "+", "1"}], ")"}]}]}], "]"}], "]"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"i", ",", 
+       RowBox[{"n", "+", "1"}]}], "}"}]}], "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.642056811671875*^9, 3.64205681859375*^9}, {
+   3.642056869125*^9, 3.64205694971875*^9}, {3.64205700678125*^9, 
+   3.642057025328125*^9}, {3.642057065109375*^9, 3.642057079703125*^9}, {
+   3.6420571224375*^9, 3.64205712690625*^9}, {3.642057203515625*^9, 
+   3.64205720371875*^9}, {3.64205731259375*^9, 3.64205731425*^9}, {
+   3.642058359609375*^9, 3.6420583903125*^9}, 3.64216497890625*^9}],
+
+Cell[BoxData[
+ RowBox[{"\[IndentingNewLine]", 
+  RowBox[{
+   RowBox[{"temp", " ", "=", " ", 
+    RowBox[{
+     RowBox[{"sickTempreture", " ", "*", " ", "sickProbability"}], " ", "+", 
+     " ", 
+     RowBox[{"normalTemp", "*", 
+      RowBox[{"(", 
+       RowBox[{"1", "-", "sickProbability"}], ")"}]}]}]}], ";"}]}]], "Input",
+ CellChangeTimes->{{3.6420569579375*^9, 3.642056963703125*^9}, {
+   3.642057143625*^9, 3.642057223421875*^9}, {3.642057264984375*^9, 
+   3.642057301609375*^9}, 3.642164982546875*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"sickProb", " ", "=", " ", 
+   RowBox[{"Table", "[", 
+    RowBox[{
+     RowBox[{"i", "/", 
+      RowBox[{"(", 
+       RowBox[{"n", "+", "1"}], ")"}]}], ",", 
+     RowBox[{"{", 
+      RowBox[{"i", ",", 
+       RowBox[{"n", "+", "1"}]}], "}"}]}], "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.642057316859375*^9, 3.642057337078125*^9}, {
+   3.64205839571875*^9, 3.64205840115625*^9}, 3.64216498484375*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"healthProb", " ", "=", " ", 
+   RowBox[{"1", "-", "sickProb"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.6420573655625*^9, 3.64205737534375*^9}, 
+   3.6420583420625*^9, 3.642164987515625*^9}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{
+   RowBox[{"temp", "[", 
+    RowBox[{"[", "1", "]"}], "]"}], " ", "=", " ", "\"\<temp\>\""}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"sickProb", "[", 
+    RowBox[{"[", "1", "]"}], "]"}], "=", " ", "\"\<sickProb\>\""}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"healthProb", "[", 
+    RowBox[{"[", "1", "]"}], "]"}], "=", " ", "\"\<healthProb\>\""}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"m", " ", "=", " ", 
+   RowBox[{
+    RowBox[{"Transpose", "[", 
+     RowBox[{"{", 
+      RowBox[{"temp", ",", "sickProb", ",", "healthProb"}], "}"}], "]"}], " ",
+     "//", " ", "TableForm"}]}], ";"}]}], "Input",
+ CellChangeTimes->{{3.6420574446875*^9, 3.642057454328125*^9}, {
+  3.642058217671875*^9, 3.642058259140625*^9}, {3.642058301171875*^9, 
+  3.642058334*^9}, {3.642058431890625*^9, 3.64205843346875*^9}, {
+  3.642058548703125*^9, 3.642058606703125*^9}, {3.642058699515625*^9, 
+  3.642058704328125*^9}, {3.642164989796875*^9, 3.642164997*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Export", "[", 
+  RowBox[{"\"\<C://new.xlsx\>\"", ",", "m", ",", " ", "\"\<XLSX\>\""}], 
+  "]"}]], "Input",
+ CellChangeTimes->{{3.642058429234375*^9, 3.642058464171875*^9}, {
+  3.642058728078125*^9, 3.642058730671875*^9}, {3.642165040859375*^9, 
+  3.642165049625*^9}}],
+
+Cell[BoxData["\<\"C://new.xlsx\"\>"], "Output",
+ CellChangeTimes->{{3.64205846475*^9, 3.642058471015625*^9}, {
+   3.64205871059375*^9, 3.6420587371875*^9}, 3.64216500171875*^9, 
+   3.642165045921875*^9}]
+}, Open  ]]
+},
+WindowSize->{1358, 666},
+WindowMargins->{{0, Automatic}, {Automatic, 0}},
+FrontEndVersion->"8.0 for Microsoft Windows (32-bit) (October 6, 2011)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[557, 20, 682, 14, 52, "Input"],
+Cell[1242, 36, 576, 12, 52, "Input"],
+Cell[1821, 50, 854, 19, 31, "Input"],
+Cell[2678, 71, 508, 12, 52, "Input"],
+Cell[3189, 85, 439, 12, 31, "Input"],
+Cell[3631, 99, 226, 5, 31, "Input"],
+Cell[3860, 106, 1043, 27, 92, "Input"],
+Cell[CellGroupData[{
+Cell[4928, 137, 291, 6, 31, "Input"],
+Cell[5222, 145, 203, 3, 30, "Output"]
+}, Open  ]]
+}
+]
+*)
+
+(* End of internal cache information *)
