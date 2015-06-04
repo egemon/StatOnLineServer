@@ -266,16 +266,33 @@ function result(response, request) {
                 response.write('<script>var w = screen.height;var canvas = document.getElementById("distr");canvas.setAttribute("style","transform: matrix(1,0,0,-1,0,0)");canvas.setAttribute("width",w);canvas.setAttribute("height",w);drowFunction(r[0], r[5], w, r[1], r[2], r[3], r[4], "#000");function drowFunction (Y, data, w, minY ,maxY ,minX ,maxX, color) {var Kx = w/(maxX - minX);var Ky = w/(maxY - minY);drowGraphic (Y, data, w, minY ,maxY ,minX ,maxX, color, Kx, Ky);createHint (Kx ,minX ,Ky ,minY);}function drowGraphic (Y, data, w, minY ,maxY ,minX ,maxX, color, Kx, Ky) {var context = document.getElementById("distr").getContext("2d");if (context) {context.strokeStyle = color;context.lineWidth = 1;context.beginPath();var canvasPointsY = [];var canvasPointsX = [];for (var i = 0; i < data.length; i++) {canvasPointsX[i] = (data[i] - minX)*Kx;canvasPointsY[i] = (Y[i] - minY)*Ky;context.lineTo(canvasPointsX[i],canvasPointsY[i]);context.moveTo(canvasPointsX[i],canvasPointsY[i]);}context.stroke();context.closePath();createDecart("#3ac", -minX*Kx, -minY*Ky, w);}}function createHint (Kx ,minX ,Ky ,minY) {var div = document.createElement("div");div.id = "hint";document.getElementById("wrap-dist").appendChild(div);div.hidden = true;document.getElementById("distr").addEventListener("mousemove",function(ev){div.hidden = false;var x = ev.offsetX/Kx+minX;var y = ev.offsetY/Ky+minY;div.style.bottom = ev.offsetY + "px";div.style.left = ev.offsetX + "px";div.innerHTML = "X = " + x.toFixed(2);div.innerHTML += "Y = " + y.toFixed(2);});}function createDecart (color, x, y, w) {var canvas = document.getElementById("distr");var context = canvas.getContext("2d");if (context) {context.strokeStyle = color;context.lineWidth = 1;context.beginPath();context.moveTo(0, y);context.lineTo(w, y);context.moveTo(w-10, y);context.lineTo(10, y);context.moveTo(w - 20, y - 10);context.lineTo(w - 10, y);context.lineTo(w - 20, y + 10);context.moveTo(x - 10, y - 20);context.lineTo(x, y - 10);context.lineTo(x + 10, y - 20);context.stroke();context.closePath();}}</script>');
             break;
             case 'density':
-                var Kernel = function(x) {
+                var kernel = function(x) {
                     return 1/Math.PI*Math.exp(-0.5*Math.pow(x,2));
                 };
 
+                var densityFunction  = function(x, k, observations, koefs, kernel) {
+                    var N = observations.length;
+                    var result = 0;
+                    for (var i = 0; i < N; i++) {
+                        result += koefs[i]*kernel((x - observations[i])/k);
+                    }
+                    result = result/(N*k);
+                    return result;
+                };
 
+                var Y = [];
+                var X = sort.sortData;
+                var koefs = sort.sortKoefs;
+                //fix due to observations.length
+                var k = 0.001;
+                for (var i = 0; i < X.length; i++) {
+                   Y.push(densityFunction(X[i], k, X, koefs, kernel));
+                }
 
                 response.write('<!DOCTYPE html><html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css"><script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script><title>Result</title></head><body><div class = "head" style="font-size:20px">Density function for '+currentGroup+'</div>');
-                response.write('<style>#wrap{ display:inline-block; position:relative; cursor:pointer; } #hint{ background-color:#abc; color:#fed; position:absolute; font-size:10px; } </style><div id="wrap"><canvas id="dens" width="500" height="500"></canvas></div>');
-                response.write('<script>var r=[['+r[0]+'],'+r[1]+','+r[2]+','+r[3]+','+r[4]+',['+sort.sortData+']];</script>');
-                response.write('<script>var w = screen.height;var canvas = document.getElementById("dens");canvas.setAttribute("style","transform: matrix(1,0,0,-1,0,0)");canvas.setAttribute("width",w);canvas.setAttribute("height",w);drowFunction(r[0], r[5], w, r[1], r[2], r[3], r[4], "#000");function drowFunction (Y, data, w, minY ,maxY ,minX ,maxX, color) {var Kx = w/(maxX - minX);var Ky = w/(maxY - minY);drowGraphic (Y, data, w, minY ,maxY ,minX ,maxX, color, Kx, Ky);createHint (Kx ,minX ,Ky ,minY);}function drowGraphic (Y, data, w, minY ,maxY ,minX ,maxX, color, Kx, Ky) {var context = document.getElementById("dens").getContext("2d");if (context) {context.strokeStyle = color;context.lineWidth = 1;context.beginPath();var canvasPointsY = [];var canvasPointsX = [];for (var i = 0; i < data.length; i++) {canvasPointsX[i] = (data[i] - minX)*Kx;canvasPointsY[i] = (Y[i] - minY)*Ky;context.lineTo(canvasPointsX[i],canvasPointsY[i]);context.moveTo(canvasPointsX[i],canvasPointsY[i]);}context.stroke();context.closePath();createDecart("#3ac", -minX*Kx, -minY*Ky, w);}}function createHint (Kx ,minX ,Ky ,minY) {var div = document.createElement("div");div.id = "hint";document.getElementById("wrap").appendChild(div);div.hidden = true;document.getElementById("dens").addEventListener("mousemove",function(ev){div.hidden = false;var x = ev.offsetX/Kx+minX;var y = ev.offsetY/Ky+minY;div.style.bottom = ev.offsetY + "px";div.style.left = ev.offsetX + "px";div.innerHTML = "X = " + x.toFixed(2);div.innerHTML += "Y = " + y.toFixed(2);});}function createDecart (color, x, y, w) {var canvas = document.getElementById("dens");var context = canvas.getContext("2d");if (context) {context.strokeStyle = color;context.lineWidth = 1;context.beginPath();context.moveTo(0, y);context.lineTo(w, y);context.moveTo(w-10, y);context.lineTo(10, y);context.moveTo(w - 20, y - 10);context.lineTo(w - 10, y);context.lineTo(w - 20, y + 10);context.moveTo(x - 10, y - 20);context.lineTo(x, y - 10);context.lineTo(x + 10, y - 20);context.stroke();context.closePath();}}</script>');
+                response.write('<style>#wrap-dens{ display:inline-block; position:relative; cursor:pointer; } #hint-dens{ background-color:#abc; color:#fed; position:absolute; font-size:10px; } </style><div id="wrap-dens"><canvas id="dens" width="500" height="500"></canvas></div>');
+                response.write('<script>var Y = [' + Y + '], X = [' + X +'];</script>');
+                response.write('<script>var w = screen.height;var canvas = document.getElementById("dens");canvas.setAttribute("style","transform: matrix(1,0,0,-1,0,0)");canvas.setAttribute("width",w);canvas.setAttribute("height",w);</script>');
             break;
             case 'box':
                 response.write('<!DOCTYPE html><html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css"><script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script><title>Result</title></head><body><div class = "head" style="font-size:20px">Box and whiskers plot for '+currentGroup+'</div>');
