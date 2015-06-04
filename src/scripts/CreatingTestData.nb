@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       157,          7]
-NotebookDataLength[      6019,        174]
-NotebookOptionsPosition[      5441,        151]
-NotebookOutlinePosition[      5783,        166]
-CellTagsIndexPosition[      5740,        163]
+NotebookDataLength[      6004,        173]
+NotebookOptionsPosition[      5426,        150]
+NotebookOutlinePosition[      5768,        165]
+CellTagsIndexPosition[      5725,        162]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -35,18 +35,18 @@ Cell[BoxData[{
    3.642164973234375*^9}, {3.642166152125*^9, 3.64216615228125*^9}}],
 
 Cell[BoxData[
- RowBox[{"\[IndentingNewLine]", 
-  RowBox[{
-   RowBox[{"sickTempreture", " ", "=", "  ", 
-    RowBox[{"RandomVariate", "[", 
-     RowBox[{
-      RowBox[{"NormalDistribution", "[", 
-       RowBox[{"38.0", ",", "0.4"}], "]"}], ",", 
-      RowBox[{"n", "+", "1"}]}], "]"}]}], ";"}]}]], "Input",
+ RowBox[{
+  RowBox[{"sickTempreture", " ", "=", "  ", 
+   RowBox[{"RandomVariate", "[", 
+    RowBox[{
+     RowBox[{"NormalDistribution", "[", 
+      RowBox[{"38.0", ",", "0.4"}], "]"}], ",", 
+     RowBox[{"n", "+", "1"}]}], "]"}]}], ";"}]], "Input",
  CellChangeTimes->{{3.642054873703125*^9, 3.6420548819375*^9}, {
    3.642054916015625*^9, 3.642054933171875*^9}, 3.6420571096875*^9, 
    3.642057149828125*^9, {3.64205835553125*^9, 3.642058382234375*^9}, {
-   3.64205864384375*^9, 3.6420586488125*^9}, 3.642164976375*^9}],
+   3.64205864384375*^9, 3.6420586488125*^9}, 3.642164976375*^9, 
+   3.642166192265625*^9}],
 
 Cell[BoxData[
  RowBox[{
@@ -70,18 +70,17 @@ Cell[BoxData[
    3.642058359609375*^9, 3.6420583903125*^9}, 3.64216497890625*^9}],
 
 Cell[BoxData[
- RowBox[{"\[IndentingNewLine]", 
-  RowBox[{
-   RowBox[{"temp", " ", "=", " ", 
-    RowBox[{
-     RowBox[{"sickTempreture", " ", "*", " ", "sickProbability"}], " ", "+", 
-     " ", 
-     RowBox[{"normalTemp", "*", 
-      RowBox[{"(", 
-       RowBox[{"1", "-", "sickProbability"}], ")"}]}]}]}], ";"}]}]], "Input",
+ RowBox[{
+  RowBox[{"temp", " ", "=", " ", 
+   RowBox[{
+    RowBox[{"sickTempreture", " ", "*", " ", "sickProbability"}], " ", "+", 
+    " ", 
+    RowBox[{"normalTemp", "*", 
+     RowBox[{"(", 
+      RowBox[{"1", "-", "sickProbability"}], ")"}]}]}]}], ";"}]], "Input",
  CellChangeTimes->{{3.6420569579375*^9, 3.642056963703125*^9}, {
    3.642057143625*^9, 3.642057223421875*^9}, {3.642057264984375*^9, 
-   3.642057301609375*^9}, 3.642164982546875*^9}],
+   3.642057301609375*^9}, 3.642164982546875*^9, 3.642166195765625*^9}],
 
 Cell[BoxData[
  RowBox[{
@@ -146,7 +145,7 @@ Cell[BoxData[
 Cell[BoxData["\<\"C://new.xlsx\"\>"], "Output",
  CellChangeTimes->{{3.64205846475*^9, 3.642058471015625*^9}, {
    3.64205871059375*^9, 3.6420587371875*^9}, 3.64216500171875*^9, 
-   3.642165045921875*^9}]
+   3.642165045921875*^9, 3.642166216953125*^9}]
 }, Open  ]]
 },
 WindowSize->{1358, 666},
@@ -166,15 +165,15 @@ CellTagsIndex->{}
 (*NotebookFileOutline
 Notebook[{
 Cell[557, 20, 682, 14, 52, "Input"],
-Cell[1242, 36, 576, 12, 52, "Input"],
-Cell[1821, 50, 854, 19, 31, "Input"],
-Cell[2678, 71, 508, 12, 52, "Input"],
-Cell[3189, 85, 439, 12, 31, "Input"],
-Cell[3631, 99, 226, 5, 31, "Input"],
-Cell[3860, 106, 1043, 27, 92, "Input"],
+Cell[1242, 36, 560, 12, 31, "Input"],
+Cell[1805, 50, 854, 19, 31, "Input"],
+Cell[2662, 71, 487, 11, 31, "Input"],
+Cell[3152, 84, 439, 12, 31, "Input"],
+Cell[3594, 98, 226, 5, 31, "Input"],
+Cell[3823, 105, 1043, 27, 92, "Input"],
 Cell[CellGroupData[{
-Cell[4928, 137, 291, 6, 31, "Input"],
-Cell[5222, 145, 203, 3, 30, "Output"]
+Cell[4891, 136, 291, 6, 31, "Input"],
+Cell[5185, 144, 225, 3, 30, "Output"]
 }, Open  ]]
 }
 ]

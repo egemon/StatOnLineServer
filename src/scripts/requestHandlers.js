@@ -191,19 +191,19 @@ function result(response, request) {
         return {"sortData": sortData , "sortKoefs": sortKoefs};
     }
 
-    var max = 0;
-    var min = 0;
-    var topQuantile = 0;
-    var bottomQuantile = 0;
-    var mediana = 0;
-    console.log(bottomQuantile);
+    var max = -Infinity;
+    var min = Infinity;
+    var topQuantile;
+    var bottomQuantile;
+    var mediana;
+    var EX = expectation(sort);
+    var DX = variation(sort, EX);
     var r = createDistrFunction (sort.sortData, sort.sortKoefs);
-    console.log(bottomQuantile);
     function createDistrFunction (data, koefs) {
         var k = 1/data.length;
         var sum = 0;
-        var minY = 0;
-        var maxY = 0;
+        var minY = koefs[0]*k;
+        var maxY = koefs[0]*k;
         var minX = Math.min.apply(null,data);
         var maxX = Math.max.apply(null,data);
         var Y = [];
@@ -212,9 +212,9 @@ function result(response, request) {
         for (var i = 0; i < data.length; i++) {
             sum+=koefs[i]*k;
             Y.push(sum);
-            bottomQuantile = quantile(Y, data, i, 1/4);
-            mediana = quantile (Y, data, i, 1/2);
-            topQuantile = quantile(Y, data, i, 3/4);
+            bottomQuantile =  quantile(Y, data, i, 1/4) !== undefined ? quantile(Y, data, i, 1/4)  : bottomQuantile;
+            mediana =  quantile (Y, data, i, 1/2) !== undefined ? quantile (Y, data, i, 1/2)  : mediana;
+            topQuantile =  quantile(Y, data, i, 3/4) !== undefined ? quantile(Y, data, i, 3/4)  : topQuantile;
             minY = Math.min(minY, sum);
             maxY = Math.max(maxY, sum);
             if (minY === sum) {
@@ -225,7 +225,8 @@ function result(response, request) {
             }
 
         } 
-        console.log(bottomQuantile);
+        console.log(' Y = ',Y);
+        console.log(' data = ',data);
         return [Y, minY ,maxY ,minX ,maxX];
     }
 
@@ -239,13 +240,10 @@ function result(response, request) {
     }
 
 
-
+    console.log('fields = ', fields);
     for (var key in fields) {
         switch (key) {
             case 'numbers':
-                console.log(bottomQuantile);
-                var EX = expectation(sort);
-                var DX = variation(sort, EX);
                 response.write('<!DOCTYPE html><html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css"><script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script><title>Result</title></head><body><div class = "head" style="font-size:20px">Numbers Results for '+currentGroup+'</div>');
                 response.write('<table class="table table-bordered table-striped" style="width: 32%"><thead><tr><th>Number</th><th>Value</th></tr></thead>'+
                     '<tbody><tr><td><span class="label label-primary">EX = </span></td><td>'+ EX +
@@ -263,9 +261,27 @@ function result(response, request) {
             break;
             case 'distribution':
                 response.write('<!DOCTYPE html><html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css"><script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script><title>Result</title></head><body><div class = "head" style="font-size:20px">Distribution function for '+currentGroup+'</div>');
-                response.write('<style>#wrap{ display:inline-block; position:relative; cursor:pointer; } #hint{ background-color:#abc; color:#fed; position:absolute; font-size:10px; } </style><div id="wrap"><canvas id="myCanvas" width="500" height="500"></canvas></div>');
+                response.write('<style>#wrap-dist{ display:inline-block; position:relative; cursor:pointer; } #hint{ background-color:#abc; color:#fed; position:absolute; font-size:10px; } </style><div id="wrap-dist"><canvas id="distr" width="500" height="500"></canvas></div>');
                 response.write('<script>var r=[['+r[0]+'],'+r[1]+','+r[2]+','+r[3]+','+r[4]+',['+sort.sortData+']];</script>');
-                response.write('<script>var w = screen.height;var canvas = document.getElementById("myCanvas");canvas.setAttribute("style","transform: matrix(1,0,0,-1,0,0)");canvas.setAttribute("width",w);canvas.setAttribute("height",w);drowFunction(r[0], r[5], w, r[1], r[2], r[3], r[4], "#000");function drowFunction (Y, data, w, minY ,maxY ,minX ,maxX, color) {var Kx = w/(maxX - minX);var Ky = w/(maxY - minY);drowGraphic (Y, data, w, minY ,maxY ,minX ,maxX, color, Kx, Ky);createHint (Kx ,minX ,Ky ,minY);}function drowGraphic (Y, data, w, minY ,maxY ,minX ,maxX, color, Kx, Ky) {var context = document.getElementById("myCanvas").getContext("2d");if (context) {context.strokeStyle = color;context.lineWidth = 1;context.beginPath();var canvasPointsY = [];var canvasPointsX = [];for (var i = 0; i < data.length; i++) {canvasPointsX[i] = (data[i] - minX)*Kx;canvasPointsY[i] = (Y[i] - minY)*Ky;context.lineTo(canvasPointsX[i],canvasPointsY[i]);context.moveTo(canvasPointsX[i],canvasPointsY[i]);}context.stroke();context.closePath();createDecart("#3ac", -minX*Kx, -minY*Ky, w);}}function createHint (Kx ,minX ,Ky ,minY) {var div = document.createElement("div");div.id = "hint";document.getElementById("wrap").appendChild(div);div.hidden = true;document.getElementById("myCanvas").addEventListener("mousemove",function(ev){div.hidden = false;var x = ev.offsetX/Kx+minX;var y = ev.offsetY/Ky+minY;div.style.bottom = ev.offsetY + "px";div.style.left = ev.offsetX + "px";div.innerHTML = "X = " + x.toFixed(2);div.innerHTML += "Y = " + y.toFixed(2);});}function createDecart (color, x, y, w) {var canvas = document.getElementById("myCanvas");var context = canvas.getContext("2d");if (context) {context.strokeStyle = color;context.lineWidth = 1;context.beginPath();context.moveTo(0, y);context.lineTo(w, y);context.moveTo(w-10, y);context.lineTo(10, y);context.moveTo(w - 20, y - 10);context.lineTo(w - 10, y);context.lineTo(w - 20, y + 10);context.moveTo(x - 10, y - 20);context.lineTo(x, y - 10);context.lineTo(x + 10, y - 20);context.stroke();context.closePath();}}</script>');
+                response.write('<script>var w = screen.height;var canvas = document.getElementById("distr");canvas.setAttribute("style","transform: matrix(1,0,0,-1,0,0)");canvas.setAttribute("width",w);canvas.setAttribute("height",w);drowFunction(r[0], r[5], w, r[1], r[2], r[3], r[4], "#000");function drowFunction (Y, data, w, minY ,maxY ,minX ,maxX, color) {var Kx = w/(maxX - minX);var Ky = w/(maxY - minY);drowGraphic (Y, data, w, minY ,maxY ,minX ,maxX, color, Kx, Ky);createHint (Kx ,minX ,Ky ,minY);}function drowGraphic (Y, data, w, minY ,maxY ,minX ,maxX, color, Kx, Ky) {var context = document.getElementById("distr").getContext("2d");if (context) {context.strokeStyle = color;context.lineWidth = 1;context.beginPath();var canvasPointsY = [];var canvasPointsX = [];for (var i = 0; i < data.length; i++) {canvasPointsX[i] = (data[i] - minX)*Kx;canvasPointsY[i] = (Y[i] - minY)*Ky;context.lineTo(canvasPointsX[i],canvasPointsY[i]);context.moveTo(canvasPointsX[i],canvasPointsY[i]);}context.stroke();context.closePath();createDecart("#3ac", -minX*Kx, -minY*Ky, w);}}function createHint (Kx ,minX ,Ky ,minY) {var div = document.createElement("div");div.id = "hint";document.getElementById("wrap-dist").appendChild(div);div.hidden = true;document.getElementById("distr").addEventListener("mousemove",function(ev){div.hidden = false;var x = ev.offsetX/Kx+minX;var y = ev.offsetY/Ky+minY;div.style.bottom = ev.offsetY + "px";div.style.left = ev.offsetX + "px";div.innerHTML = "X = " + x.toFixed(2);div.innerHTML += "Y = " + y.toFixed(2);});}function createDecart (color, x, y, w) {var canvas = document.getElementById("distr");var context = canvas.getContext("2d");if (context) {context.strokeStyle = color;context.lineWidth = 1;context.beginPath();context.moveTo(0, y);context.lineTo(w, y);context.moveTo(w-10, y);context.lineTo(10, y);context.moveTo(w - 20, y - 10);context.lineTo(w - 10, y);context.lineTo(w - 20, y + 10);context.moveTo(x - 10, y - 20);context.lineTo(x, y - 10);context.lineTo(x + 10, y - 20);context.stroke();context.closePath();}}</script>');
+            break;
+            case 'density':
+                var Kernel = function(x) {
+                    return 1/Math.PI*Math.exp(-0.5*Math.pow(x,2));
+                };
+
+
+
+                response.write('<!DOCTYPE html><html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css"><script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script><title>Result</title></head><body><div class = "head" style="font-size:20px">Density function for '+currentGroup+'</div>');
+                response.write('<style>#wrap{ display:inline-block; position:relative; cursor:pointer; } #hint{ background-color:#abc; color:#fed; position:absolute; font-size:10px; } </style><div id="wrap"><canvas id="dens" width="500" height="500"></canvas></div>');
+                response.write('<script>var r=[['+r[0]+'],'+r[1]+','+r[2]+','+r[3]+','+r[4]+',['+sort.sortData+']];</script>');
+                response.write('<script>var w = screen.height;var canvas = document.getElementById("dens");canvas.setAttribute("style","transform: matrix(1,0,0,-1,0,0)");canvas.setAttribute("width",w);canvas.setAttribute("height",w);drowFunction(r[0], r[5], w, r[1], r[2], r[3], r[4], "#000");function drowFunction (Y, data, w, minY ,maxY ,minX ,maxX, color) {var Kx = w/(maxX - minX);var Ky = w/(maxY - minY);drowGraphic (Y, data, w, minY ,maxY ,minX ,maxX, color, Kx, Ky);createHint (Kx ,minX ,Ky ,minY);}function drowGraphic (Y, data, w, minY ,maxY ,minX ,maxX, color, Kx, Ky) {var context = document.getElementById("dens").getContext("2d");if (context) {context.strokeStyle = color;context.lineWidth = 1;context.beginPath();var canvasPointsY = [];var canvasPointsX = [];for (var i = 0; i < data.length; i++) {canvasPointsX[i] = (data[i] - minX)*Kx;canvasPointsY[i] = (Y[i] - minY)*Ky;context.lineTo(canvasPointsX[i],canvasPointsY[i]);context.moveTo(canvasPointsX[i],canvasPointsY[i]);}context.stroke();context.closePath();createDecart("#3ac", -minX*Kx, -minY*Ky, w);}}function createHint (Kx ,minX ,Ky ,minY) {var div = document.createElement("div");div.id = "hint";document.getElementById("wrap").appendChild(div);div.hidden = true;document.getElementById("dens").addEventListener("mousemove",function(ev){div.hidden = false;var x = ev.offsetX/Kx+minX;var y = ev.offsetY/Ky+minY;div.style.bottom = ev.offsetY + "px";div.style.left = ev.offsetX + "px";div.innerHTML = "X = " + x.toFixed(2);div.innerHTML += "Y = " + y.toFixed(2);});}function createDecart (color, x, y, w) {var canvas = document.getElementById("dens");var context = canvas.getContext("2d");if (context) {context.strokeStyle = color;context.lineWidth = 1;context.beginPath();context.moveTo(0, y);context.lineTo(w, y);context.moveTo(w-10, y);context.lineTo(10, y);context.moveTo(w - 20, y - 10);context.lineTo(w - 10, y);context.lineTo(w - 20, y + 10);context.moveTo(x - 10, y - 20);context.lineTo(x, y - 10);context.lineTo(x + 10, y - 20);context.stroke();context.closePath();}}</script>');
+            break;
+            case 'box':
+                response.write('<!DOCTYPE html><html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css"><script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script><title>Result</title></head><body><div class = "head" style="font-size:20px">Box and whiskers plot for '+currentGroup+'</div>');
+                response.write('<style>#wrap-box{ display:inline-block; position:relative; cursor:pointer; } #hint-box{ background-color:#abc; color:#fed; position:absolute; font-size:10px; } </style><div id="wrap-box"><canvas id="box" width="500" height="500"></canvas></div>');
+                response.write('<script>var EX ='+EX+' , VAR ='+DX+', MAX ='+max+' , MIN =   '+min+' , topQuantile =   '+topQuantile+' , mediana =   '+mediana+' , bottomQuantile =    '+bottomQuantile+'  ;</script>');
+                response.write('<script>var w = screen.height/3;var canvas = document.getElementById("box");canvas.setAttribute("style","transform: matrix(1,0,0,-1,0,0)");canvas.setAttribute("width",w);canvas.setAttribute("height",w);drowBox( EX, VAR, MAX, MIN, topQuantile, mediana, bottomQuantile, "#000");function drowBox ( EX, VAR, MAX, MIN, topQuantile, mediana, bottomQuantile, color) {var Ky = w/(MAX - MIN);createHint (Ky ,MIN);EX = (EX-MIN)*Ky;VAR = (VAR-MIN)*Ky;MAX = (MAX-MIN)*Ky;topQuantile = (topQuantile-MIN)*Ky;mediana = (mediana-MIN)*Ky;bottomQuantile = (bottomQuantile-MIN)*Ky;MIN = (MIN-MIN)*Ky;drowBoxGraphic (EX, VAR, MAX, MIN, topQuantile, mediana, bottomQuantile, color, Ky);}function drowBoxGraphic (EX, VAR, MAX, MIN, topQuantile, mediana, bottomQuantile, color) {var context = document.getElementById("box").getContext("2d");if (context) {context.strokeStyle = color;context.lineWidth = 1;context.beginPath();context.moveTo(w/2-10,MIN);context.lineTo(w/2+10,MIN);context.moveTo(w/2,MIN);context.lineTo(w/2,bottomQuantile);context.strokeRect(w/2-10, bottomQuantile, 20, topQuantile-bottomQuantile);context.moveTo(w/2-10,mediana);context.lineTo(w/2+10,mediana);context.moveTo(w/2,topQuantile);context.lineTo(w/2,MAX);context.moveTo(w/2-10,MAX);context.lineTo(w/2+10,MAX);context.moveTo(w/2,EX);context.arc(w/2, EX, Math.sqrt(VAR)|| 10 , 0, 2*Math.PI, false);context.stroke();context.closePath();}}function createHint (Ky ,MIN) {var div = document.createElement("div");div.id = "hint-box";document.getElementById("wrap-box").appendChild(div);div.hidden = true;document.getElementById("box").addEventListener("mousemove",function(ev){div.hidden = false;var y = ev.offsetY/Ky+MIN;div.style.bottom = ev.offsetY + "px";div.style.left = ev.offsetX + "px";div.innerHTML = "Y = " + y.toFixed(2);});}</script>');
             break;
         }
     }
