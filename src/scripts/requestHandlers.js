@@ -1,27 +1,34 @@
 var querystring = require("querystring"),
     fs = require("fs"),
     formidable = require("formidable"),
+    ejs = require('ejs'),
     XLSX = require('xlsx');
 
-function start(response) {
+var DEST_PATH = '/tmp/test.xlsx';
 
-  var body = '<html>'+
-    '<head>'+
-    '<meta http-equiv="Content-Type" '+
-    'content="text/html; charset=UTF-8" />'+
-    '</head>'+
-    '<body>'+
-    '<form action="/upload" enctype="multipart/form-data" '+
-    'method="post">'+
-    '<input type="file" name="upload" multiple="multiple">'+
-    '<input type="submit" value="Загрузить" />'+
-    '</form>'+
-    '</body>'+
-    '</html>';
 
-    response.writeHead(200, {"Content-Type": "text/html"});
-    response.write(body);
-    response.end();
+function render (tmplUrl, res, scope) {
+    fs.readFile(tmplUrl, function (err, tmpl){
+        res.writeHead(200, {'Content-Type': 'text/html'});
+        res.write(ejs.render(tmpl + '', scope));
+        res.end();
+    });
+}
+
+function handleWindowsError (originPath, destPath) {
+
+    /* Возможна ошибка в Windows: попытка переименования уже существующего файла */
+    fs.rename(originPath, destPath, function(err) {
+      if (err) {
+        fs.unlink(destPath);
+        fs.rename(originPath, destPath);
+      }
+    });
+}
+
+//FIRST PAGE
+function start(res) {
+    render('src/tmpls/index.html', res);
 }
 
 var workBook = {};
@@ -31,36 +38,31 @@ function upload(response, request) {
     form.parse(request, function(error, fields, files) {
         console.log("parsing done");
 
-        /* Возможна ошибка в Windows: попытка переименования уже существующего файла */
-        fs.rename(files.upload.path, "/tmp/test.xlsx", function(err) {
-          if (err) {
-            fs.unlink("/tmp/test.xlsx");
-            fs.rename(files.upload.path, "/tmp/test.xlsx");
-          }
-        });
+        handleWindowsError(files.upload.path, DEST_PATH);
 
         //парсинг и записывание данных в массив
         response.writeHead(200, {"Content-Type": "text/html"});
-        var wb = XLSX.readFile('/tmp/test.xlsx', {encoding:'base64'});
-        var allData = [];
 
-        for (var list in wb['Sheets']){
+        var wb = XLSX.readFile(DEST_PATH, {encoding:'base64'});
+
+        for (var list in wb.Sheets){
             workBook[list]=[];
-            // workBook[list].dataRange = wb['Sheets'][list]['!ref'] ;
-            delete wb['Sheets'][list]['!ref'];
+            // workBook[list].dataRange = wb.Sheets[list]['!ref'] ;
+            delete wb.Sheets[list]['!ref'];
             var varQnt=0;
             var nowVar=-1;
             var VariablesNames = [];
-            for (var data in wb['Sheets'][list]){ 
+            for (var data in wb.Sheets[list]){
                     nowVar++;
-                if (wb['Sheets'][list][data]['h']) {
-                    workBook[list][wb['Sheets'][list][data]['h']] = [];
-                    VariablesNames.push(wb['Sheets'][list][data]['h']);
+                if (wb.Sheets[list][data]['h']) {
+                    workBook[list][wb.Sheets[list][data]['h']] = [];
+                    VariablesNames.push(wb.Sheets[list][data]['h']);
                 }else {
-                    workBook[list][VariablesNames[(nowVar%VariablesNames.length)]].push(wb['Sheets'][list][data]['v']);
+                    workBook[list][VariablesNames[(nowVar%VariablesNames.length)]].push(wb.Sheets[list][data]['v']);
                 }
             };
         }
+
         global.workBook = workBook;
         global.VariablesNames = VariablesNames;
 
@@ -71,12 +73,12 @@ function upload(response, request) {
             for (var i = 0; i < VariablesNames.length; i++) {
                     result+= '<option>'+VariablesNames[i]+'</option>';
                 }
-            result+='</select>'; 
-            result += '<div class = "head" style="font-size:20px">Choose concentration 1 variable</div><select name = "concentration1" class="form-control">'; 
+            result+='</select>';
+            result += '<div class = "head" style="font-size:20px">Choose concentration 1 variable</div><select name = "concentration1" class="form-control">';
             for (i = 0; i < VariablesNames.length; i++) {
                     result+= '<option>'+VariablesNames[i]+'</option>';
                 }
-            result+='</select>'; 
+            result+='</select>';
             result += '<div class = "head" style="font-size:20px">Choose concentration 2 variable</div><select name = "concentration2" class="form-control">';
             for (i = 0; i < VariablesNames.length; i++) {
                     result+= '<option>'+VariablesNames[i]+'</option>';
@@ -95,6 +97,7 @@ function upload(response, request) {
 
 
     });
+
 }
 
 function choose(response, request) {
@@ -122,7 +125,7 @@ function choose(response, request) {
         for (key in fields) {
             global.concentrations.push(fields[key]);
         }
-    });    
+    });
 }
 
 function result(response, request) {
@@ -207,7 +210,7 @@ function result(response, request) {
         var minX = Math.min.apply(null,data);
         var maxX = Math.max.apply(null,data);
         var Y = [];
-       
+
 
         for (var i = 0; i < data.length; i++) {
             sum+=koefs[i]*k;
@@ -224,7 +227,7 @@ function result(response, request) {
                 max = data[i];
             }
 
-        } 
+        }
         console.log(' Y = ',Y);
         console.log(' data = ',data);
         return [Y, minY ,maxY ,minX ,maxX];
@@ -249,10 +252,10 @@ function result(response, request) {
                     '<tbody><tr><td><span class="label label-primary">EX = </span></td><td>'+ EX +
                     '</td></tr><tr><td><span class="label label-success">VAR = </span></td><td>'+ DX +
                     '</td></tr><tr><td><span class="label label-warning">MAX = </span></td><td>'+ max +
-                    '</td></tr><tr><td><span class="label label-danger">MIN = </span></td><td>'+ min + 
-                    '</td></tr><tr><td><span class="label label-info">topQuantile = </span></td><td>'+ topQuantile + 
-                    '</td></tr><tr><td><span class="label label-danger">mediana = </span></td><td>'+ mediana + 
-                    '</td></tr><tr><td><span class="label label-default">bottomQuantile = </span></td><td>' + bottomQuantile + 
+                    '</td></tr><tr><td><span class="label label-danger">MIN = </span></td><td>'+ min +
+                    '</td></tr><tr><td><span class="label label-info">topQuantile = </span></td><td>'+ topQuantile +
+                    '</td></tr><tr><td><span class="label label-danger">mediana = </span></td><td>'+ mediana +
+                    '</td></tr><tr><td><span class="label label-default">bottomQuantile = </span></td><td>' + bottomQuantile +
                     '</td></tr></tbody></table>');
                 response.write('<div style = "height: 40px; width: 100%"></div>');
 
@@ -303,7 +306,7 @@ function result(response, request) {
         }
     }
     response.end();
-    });    
+    });
 }
 
 
@@ -318,7 +321,7 @@ exports.choose = choose;
 exports.result = result;
 
 //Функция для вычисления определителя матрицы A
-function determinant(A){  
+function determinant(A){
 var n = A.length, subA = [], detA = 0;
 if (n===1) {return A[0][0];}
 for (var i=0; i<n; i++)

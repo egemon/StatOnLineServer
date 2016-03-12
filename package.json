@@ -30,9 +30,13 @@
   },
   "homepage": "https://github.com/egemon/StatOnLineServer",
   "dependencies": {
+    "ejs": "^2.4.1",
     "formidable": "^1.0.17",
-    "xlsx": "^0.7.12",
     "jshint-stylish": "^1.0.0",
-    "time-grunt": "^1.0.0"
+    "time-grunt": "^1.0.0",
+    "xlsx": "^0.7.12"
+  },
+  "directories": {
+    "doc": "docs"
   }
 }
