@@ -26,13 +26,44 @@ function handleWindowsError (originPath, destPath) {
     });
 }
 
+function parseXLS (wb) {
+    var sheets = wb.Sheets;
+    var dataSet = {};
+    var varNames = [];
+    for (var key in sheets){
+        dataSet[key] = [];
+        var sheet = sheets[key];
+        varNames = [];
+        delete sheet['!ref'];
+        var nowVar = -1;
+        for (var cellKey in sheet) {
+
+            nowVar++;
+            var cell = sheet[cellKey];
+
+            //cell.h means text cell == variable name
+            if (cell.h) {
+                dataSet[key][cell.h] = [];
+                varNames.push(cell.h);
+            } else {
+                dataSet[key][varNames[(nowVar % varNames.length)]].push(cell.v);
+            }
+        }
+    }
+
+    return {
+        workBook: dataSet,
+        VariablesNames: varNames
+    };
+}
+
+
 //FIRST PAGE
 function start(res) {
     render('src/tmpls/index.html', res);
 }
 
-var workBook = {};
-function upload(response, request) {
+function upload(res, request) {
     var form = new formidable.IncomingForm();
     console.log("about to parse");
     form.parse(request, function(error, fields, files) {
@@ -40,62 +71,25 @@ function upload(response, request) {
 
         handleWindowsError(files.upload.path, DEST_PATH);
 
-        //парсинг и записывание данных в массив
-        response.writeHead(200, {"Content-Type": "text/html"});
-
         var wb = XLSX.readFile(DEST_PATH, {encoding:'base64'});
 
-        for (var list in wb.Sheets){
-            workBook[list]=[];
-            // workBook[list].dataRange = wb.Sheets[list]['!ref'] ;
-            delete wb.Sheets[list]['!ref'];
-            var varQnt=0;
-            var nowVar=-1;
-            var VariablesNames = [];
-            for (var data in wb.Sheets[list]){
-                    nowVar++;
-                if (wb.Sheets[list][data]['h']) {
-                    workBook[list][wb.Sheets[list][data]['h']] = [];
-                    VariablesNames.push(wb.Sheets[list][data]['h']);
-                }else {
-                    workBook[list][VariablesNames[(nowVar%VariablesNames.length)]].push(wb.Sheets[list][data]['v']);
-                }
-            };
-        }
+        global.workBook = parseXLS(wb).workBook;
+        global.VariablesNames = parseXLS(wb).VariablesNames;
 
-        global.workBook = workBook;
-        global.VariablesNames = VariablesNames;
-
-
-        var html = createChooseVariablePage(VariablesNames);
-        function createChooseVariablePage(VariablesNames) {
-            var result = '<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css"><script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script></head><body><form action="/choose" enctype="multipart/form-data" method="post"><div class = "head" style="font-size:20px">Choose reseraching variable</div><select name="variable" class="form-control">';
-            for (var i = 0; i < VariablesNames.length; i++) {
-                    result+= '<option>'+VariablesNames[i]+'</option>';
-                }
-            result+='</select>';
-            result += '<div class = "head" style="font-size:20px">Choose concentration 1 variable</div><select name = "concentration1" class="form-control">';
-            for (i = 0; i < VariablesNames.length; i++) {
-                    result+= '<option>'+VariablesNames[i]+'</option>';
-                }
-            result+='</select>';
-            result += '<div class = "head" style="font-size:20px">Choose concentration 2 variable</div><select name = "concentration2" class="form-control">';
-            for (i = 0; i < VariablesNames.length; i++) {
-                    result+= '<option>'+VariablesNames[i]+'</option>';
-                }
-            result+='</select>';
-
-            result += '<input type="submit" value="choose"/> ';
-            result += '</form>'+'</body>'+'</html>';
-            return result;
-        }
-
-
-        response.writeHead(200, {"Content-Type": "text/html"});
-        response.write(html);
-        response.end();
-
-
+        render('src/tmpls/upload.html', res, {
+            selects: [
+                {
+                    name: 'variable',
+                    title: 'Choose reseraching variable'
+                },{
+                    name: 'concentration1',
+                    title: 'Choose concentration 1 variable'
+                },{
+                    name: 'concentration2',
+                    title: 'Choose concentration 2 variable'
+                }],
+            VariablesNames: VariablesNames
+        });
     });
 
 }

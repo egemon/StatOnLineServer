@@ -4,7 +4,17 @@
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
     </head>
-        <body>
+    <body>
         <form action="/choose" enctype="multipart/form-data" method="post">
-        <div class = "head" style="font-size:20px">Choose reseraching variable</div>
-        <select name="variable" class="form-control">
+            <%for (var i = 0; i < selects.length; i++) {%>
+                <div class = "head" style="font-size:20px"><%=selects[i].title%></div>
+                <select name="<%=selects[i].name%>" class="form-control">
+                <%for (var j = 0; j < VariablesNames.length; j++) {%>
+                    <option><%= VariablesNames[j] %></option>
+                <%}%>
+                </select>
+            <%}%>
+            <input type="submit" value="choose"/>
+        </form>
+    </body>
+</html>
